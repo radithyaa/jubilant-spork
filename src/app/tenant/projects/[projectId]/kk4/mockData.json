@@ -136,7 +136,8 @@
       "icon": "FileSpreadsheet",
       "iconBg": "#FFFBE6",
       "iconColor": "#FAAD14",
-      "lastRun": "2025-10-14 10:15"
+      "lastRun": "2025-10-14 10:15",
+      "link": "/tenant/projects/{projectId}/kk4/equalization"
     },
     {
       "id": "kk-4-3",
@@ -148,7 +149,8 @@
       "icon": "Receipt",
       "iconBg": "#FFFBE6",
       "iconColor": "#FAAD14",
-      "lastRun": "2025-10-14 10:45"
+      "lastRun": "2025-10-14 10:45",
+      "link": "/tenant/projects/{projectId}/kk4/spt-equalization"
     },
     {
       "id": "kk-4-4",
@@ -160,7 +162,8 @@
       "icon": "DollarSign",
       "iconBg": "#F6FFED",
       "iconColor": "#52C41A",
-      "lastRun": "2025-10-14 11:20"
+      "lastRun": "2025-10-14 11:20",
+      "link": "/tenant/projects/{projectId}/kk4/cash-flow"
     },
     {
       "id": "kk-4-5",
@@ -172,7 +175,8 @@
       "icon": "Package",
       "iconBg": "#F6FFED",
       "iconColor": "#52C41A",
-      "lastRun": "2025-10-14 11:50"
+      "lastRun": "2025-10-14 11:50",
+      "link": "/tenant/projects/{projectId}/kk4/inventory-flow"
     }
   ],
   "recentIssues": [

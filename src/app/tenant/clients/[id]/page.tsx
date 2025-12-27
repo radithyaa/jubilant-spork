@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-<<<<<<< HEAD
 	useClient,
 	useClientReadiness,
 	useDeleteClient,
@@ -37,6 +36,7 @@ import {
 	Eye,
 	CheckCircle2,
 	AlertCircle,
+	History,
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -46,30 +46,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-=======
-  ArrowLeft,
-  Trash2,
-  Edit,
-  Building2,
-  FileText,
-  Activity,
-  Calendar,
-  Mail,
-  Phone,
-  MapPin,
-  Globe,
-  Clock,
-  Filter,
-  Plus,
-  Eye,
-  CheckCircle2,
-  AlertCircle,
-  History
-} from 'lucide-react';
-import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
->>>>>>> 90c558a6ac23ea3db15c3dabb5cb1c58490683e7
 
 const formatThousandsId = (value: number) => {
 	if (!Number.isFinite(value)) return "";
@@ -313,40 +289,7 @@ export default function ClientDetailPage() {
 		.filter((p: any) => p.status === "PLANNING" || p.status === "IN_PROGRESS")
 		.map(transformProjectForDisplay);
 
-<<<<<<< HEAD
 	const totalProjects = clientProjects.length;
-=======
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Detail Klien</h1>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => router.push(`/tenant/clients/${id}/history`)}
-            >
-              <History className="h-4 w-4" />
-              Riwayat
-            </Button>
-            <Button
-              variant="outline"
-              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:hover:bg-red-950/50 dark:text-red-400"
-              onClick={handleDelete}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Hapus
-            </Button>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
-              asChild
-            >
-              <Link href={`/tenant/clients/${id}/edit`}>
-                Edit Data Klien
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </div>
->>>>>>> 90c558a6ac23ea3db15c3dabb5cb1c58490683e7
 
 	return (
 		<div className="space-y-6 p-6">
@@ -365,6 +308,14 @@ export default function ClientDetailPage() {
 						Detail Klien
 					</h1>
 					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							className="gap-2"
+							onClick={() => router.push(`/tenant/clients/${id}/history`)}
+						>
+							<History className="h-4 w-4" />
+							Riwayat
+						</Button>
 						<Button
 							variant="outline"
 							className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:hover:bg-red-950/50 dark:text-red-400"

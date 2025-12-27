@@ -1,13 +1,13 @@
 "use client";
 
 import RBAC from "@/components/rbac/RBAC";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import DetailProjectTab from "../../../new/components/DetailProjectTab";
 import ProjectSettingsTab from "../../../new/components/ProjectSettingsTab";
-import Switch from "@/components/switch";
+
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -21,7 +21,6 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { getProjectById, updateProject } from "@/services/project.service";
 
 function EditProjectPageContent() {
-	const [published, setPublished] = useState(false);
 	const router = useRouter();
 	const params = useParams();
 	const queryClient = useQueryClient();
@@ -99,7 +98,7 @@ function EditProjectPageContent() {
 				escalation_user_ids,
 			});
 
-			if (project.status !== "PLANNING" && project.status !== "planning") setPublished(true);
+
 		}
 	}, [project, methods]);
 
@@ -172,15 +171,6 @@ function EditProjectPageContent() {
 						<h1 className="font-dm text-3xl font-bold leading-[42px] tracking-[-0.68px]">
 							Edit Project
 						</h1>
-					</div>
-					<div className="flex items-center gap-4">
-						<span className="font-inter text-sm font-medium leading-[14px] ">
-							Publish
-						</span>
-						<Switch
-							checked={published}
-							onChange={(e: any) => setPublished(e.target.checked)}
-						/>
 					</div>
 					<Button
 						type="submit"

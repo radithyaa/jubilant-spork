@@ -4,8 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuditLog } from "./AuditLog";
 import { Discussion } from "./Discussion";
 import { Card } from "@/components/ui/card";
+import { useParams } from "next/navigation";
 
 export default function ActivityPage() {
+	const params = useParams();
+	const projectId = params.projectId as string;
+
 	return (
 		<Card className="flex flex-col gap-5 p-4">
 			{/* Page Header */}
@@ -36,7 +40,7 @@ export default function ActivityPage() {
 				</TabsList>
 
 				<TabsContent value="audit-log" className="mt-6">
-					<AuditLog />
+					<AuditLog projectId={projectId} />
 				</TabsContent>
 
 				<TabsContent value="discussion" className="mt-6">

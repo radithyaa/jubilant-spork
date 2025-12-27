@@ -52,6 +52,7 @@ import {
   ClipboardCheck,
   TrendingUp
 } from 'lucide-react';
+import { useCoaTemplateDetails } from '@/hooks/useCoaTemplates';
 
 const stripNonDigits = (value: unknown) => String(value ?? '').replace(/\D/g, '');
 
@@ -341,6 +342,26 @@ export function CreateClientModalUpdated({
   });
 
   const watchedValues = watch();
+
+  const selectedTemplate = watchedValues.preferences?.coa_template;
+  const { data: templateDetails } = useCoaTemplateDetails(selectedTemplate || null);
+
+  useEffect(() => {
+    if (watchedValues.preferences?.use_default_coa) {
+      if (templateDetails && templateDetails.length > 0) {
+        const formattedCoa = templateDetails.map((acc) => ({
+          account_number: acc.account_code,
+          account_name: acc.account_name,
+          account_type: acc.account_type,
+          normal_balance: acc.normal_balance || 'Debit',
+          description: '',
+        }));
+        setValue('customCoa', formattedCoa);
+      }
+    } else {
+      setValue('customCoa', []);
+    }
+  }, [templateDetails, watchedValues.preferences?.use_default_coa, setValue]);
 
   const flattenErrors = (errs: any, prefix = ''): Array<{ path: string; message: string }> => {
     if (!errs) return [];
@@ -1754,10 +1775,18 @@ export function CreateClientModalUpdated({
               <Label>Preferensi Akuntansi</Label>
 
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  {...register('preferences.use_default_coa')}
+                <Controller
+                  control={control}
+                  name="preferences.use_default_coa"
+                  render={({ field }) => (
+                    <Checkbox
+                      id="preferences.use_default_coa"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
                 />
-                <Label htmlFor="preferences.use_default_coa">Gunakan Template Default</Label>
+                <Label htmlFor="preferences.use_default_coa">Gunakan Template Default Tenant</Label>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -1766,6 +1795,7 @@ export function CreateClientModalUpdated({
                   <Select
                     onValueChange={(value) => setValue('preferences.coa_template', value)}
                     value={watchedValues.preferences?.coa_template || ''}
+                    disabled={!watchedValues.preferences?.use_default_coa}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih template COA" />
@@ -1781,7 +1811,11 @@ export function CreateClientModalUpdated({
                 </div>
                 <div>
                   <Label>Frekuensi Reset</Label>
-                  <Select onValueChange={(value) => setValue('preferences.reset_frequency', value)}>
+                  <Select
+                    onValueChange={(value) => setValue('preferences.reset_frequency', value)}
+                    value={watchedValues.preferences?.reset_frequency || ''}
+                    disabled={!watchedValues.preferences?.use_default_coa}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih frekuensi reset" />
                     </SelectTrigger>
@@ -1802,8 +1836,16 @@ export function CreateClientModalUpdated({
               <Label>Penomoran Voucher</Label>
 
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  {...register('preferences.use_tenant_voucher_numbering')}
+                <Controller
+                  control={control}
+                  name="preferences.use_tenant_voucher_numbering"
+                  render={({ field }) => (
+                    <Checkbox
+                      id="preferences.use_tenant_voucher_numbering"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
                 />
                 <Label htmlFor="preferences.use_tenant_voucher_numbering">Gunakan Kebijakan Tenant</Label>
               </div>
@@ -2017,7 +2059,7 @@ export function CreateClientModalUpdated({
         // Helper to mark document as not available
         const markAsNotAvailable = (docType: string) => {
           const existingIndex = currentDocs.findIndex(d => d.document_type === docType);
-
+          
           const newDoc = {
             document_type: docType,
             document_number: '',
@@ -2057,7 +2099,7 @@ export function CreateClientModalUpdated({
                 return (
                   <div key={docType.id} className={`border rounded-lg overflow-hidden ${isMissing ? 'border-red-500' : ''}`}>
                     {/* Document Header */}
-                    <div className={`flex items-center justify-between p-4 ${isMissing ? 'bg-red-50 dark:bg-red-900/20' : 'bg-card dark:bg-slate-900'}`}>
+                    <div className={`flex items-center justify-between p-4 ${isMissing ? 'bg-red-50 dark:bg-red-900/20' : 'bg-white dark:bg-slate-900'}`}>
                       <div>
                         <p className="font-medium text-blue-900 dark:text-blue-100">{docType.label}</p>
                         <p className="text-xs text-muted-foreground">Format: {docType.format}</p>
@@ -2092,10 +2134,10 @@ export function CreateClientModalUpdated({
                           </Button>
                         )}
                         {isUploaded && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
+                          <Button 
+                            type="button" 
+                            variant="ghost" 
+                            size="sm" 
                             className="text-red-500 hover:text-red-700"
                             onClick={() => {
                               setValue('legalDocuments', currentDocs.filter(d => d.document_type !== docType.id));
@@ -2121,9 +2163,9 @@ export function CreateClientModalUpdated({
                                 Upload
                               </span>
                             </label>
-                            <Button
-                              type="button"
-                              variant="secondary"
+                            <Button 
+                              type="button" 
+                              variant="secondary" 
                               size="sm"
                               className="bg-slate-700 text-white hover:bg-slate-800"
                               onClick={() => markAsNotAvailable(docType.id)}
@@ -2149,9 +2191,9 @@ export function CreateClientModalUpdated({
                                 Upload
                               </span>
                             </label>
-                            <Button
-                              type="button"
-                              variant="secondary"
+                            <Button 
+                              type="button" 
+                              variant="secondary" 
                               size="sm"
                               className="bg-slate-700 text-white hover:bg-slate-800"
                               disabled
@@ -2195,7 +2237,7 @@ export function CreateClientModalUpdated({
             <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg text-sm text-blue-700 dark:text-blue-300">
               <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <p>
-                Dokumen yang diupload akan disimpan dengan enkripsi dan hanya dapat diakses oleh tim yang berwenang.
+                Dokumen yang diupload akan disimpan dengan enkripsi dan hanya dapat diakses oleh tim yang berwenang. 
                 Pastikan dokumen yang diupload sudah benar dan masih berlaku.
               </p>
             </div>
@@ -2209,21 +2251,21 @@ export function CreateClientModalUpdated({
         const legalDocs = watchedValues.legalDocuments || [];
         const preferences = watchedValues.preferences;
         const errorList = flattenErrors(errors);
-
+        
         // Calculate completeness
         const uploadedDocs = legalDocs.filter(d => d.status === 'uploaded' || d.status === 'verified').length;
         const totalDocs = legalDocs.length;
         const completenessPercent = totalDocs > 0 ? Math.round((uploadedDocs / totalDocs) * 100) : 100;
-
+        
         // Get primary contact
         const primaryContact = contacts.find(c => c.is_primary);
         const billingContact = contacts.find(c => c.is_billing_contact);
-
+        
         // Get applicable taxes for display
         const activeTaxes = taxInfo?.applicable_taxes || [];
-
+        
         // Get PKP effective date
-        const pkpDate = taxInfo?.pkp_confirmation_date
+        const pkpDate = taxInfo?.pkp_confirmation_date 
           ? new Date(taxInfo.pkp_confirmation_date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
           : '-';
 
@@ -2445,11 +2487,11 @@ export function CreateClientModalUpdated({
                     ktp_direktur: 'KTP Direktur',
                   };
                   const isUploaded = doc.status === 'uploaded' || doc.status === 'verified';
-
+                  
                   return (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-card dark:bg-slate-900 rounded-lg"
+                    <div 
+                      key={index} 
+                      className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg"
                     >
                       <div>
                         <p className="font-medium text-blue-900 dark:text-blue-100">
@@ -2460,7 +2502,7 @@ export function CreateClientModalUpdated({
                           {doc.upload_date && ` • Diupload ${new Date(doc.upload_date).toLocaleDateString('id-ID')}`}
                         </p>
                       </div>
-                      <Badge
+                      <Badge 
                         variant={isUploaded ? 'default' : 'secondary'}
                         className={isUploaded ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : ''}
                       >
@@ -2559,8 +2601,8 @@ export function CreateClientModalUpdated({
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : (
-                <Button
-                  type="submit"
+                <Button 
+                  type="submit" 
                   disabled={isSubmitting}
                   className="bg-blue-600 hover:bg-blue-700"
                   onClick={() => {

@@ -30,6 +30,56 @@ export type ProjectFile = {
   users_created: { name: string, email: string };
 };
 
+const VisibilityCell = ({ file }: { file: ProjectFile }) => {
+  const queryClient = useQueryClient();
+
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: (newValue: boolean) => toggleProjectFileVisibility(file.project_id, file.id, newValue),
+    onMutate: async (newValue) => {
+      await queryClient.cancelQueries({ queryKey: ['projectFiles', file.project_id] });
+      const previousFiles = queryClient.getQueryData(['projectFiles', file.project_id]);
+      queryClient.setQueryData(['projectFiles', file.project_id], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          files: oldData.files.map((f: ProjectFile) =>
+            f.id === file.id ? { ...f, visible_to_customer: newValue } : f
+          ),
+        };
+      });
+      return { previousFiles };
+    },
+    onSuccess: (data) => {
+      toast.success('Visibilitas file berhasil diperbarui.');
+      queryClient.invalidateQueries({ queryKey: ['projectFiles', file.project_id] });
+    },
+    onError: (err: any, newValue, context) => {
+      toast.error('Gagal memperbarui visibilitas file.', { description: err.message });
+      queryClient.setQueryData(['projectFiles', file.project_id], context?.previousFiles);
+    },
+  });
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Switch
+            checked={file.visible_to_customer}
+            onCheckedChange={(newValue) => toggleVisibilityMutation.mutate(newValue)}
+            disabled={toggleVisibilityMutation.isPending}
+            aria-label={file.visible_to_customer ? 'Terlihat oleh klien' : 'Tidak terlihat oleh klien'}
+            color='primary'
+            className={`mx-auto flex ${file.visible_to_customer ? 'bg-primary' : 'bg-background'}`}
+          />
+        </TooltipTrigger>
+        <TooltipContent>
+          {file.visible_to_customer ? 'Terlihat oleh klien' : 'Tidak terlihat oleh klien'}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
 export const columns: ColumnDef<ProjectFile>[] = [
   {
     id: 'select',
@@ -89,56 +139,7 @@ export const columns: ColumnDef<ProjectFile>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Visible ke Klien" />
     ),
-    cell: ({ row }) => {
-      const queryClient = useQueryClient();
-      const file = row.original;
-
-      const toggleVisibilityMutation = useMutation({
-        mutationFn: (newValue: boolean) => toggleProjectFileVisibility(file.project_id, file.id, newValue),
-        onMutate: async (newValue) => {
-          await queryClient.cancelQueries({ queryKey: ['projectFiles', file.project_id] });
-          const previousFiles = queryClient.getQueryData(['projectFiles', file.project_id]);
-          queryClient.setQueryData(['projectFiles', file.project_id], (oldData: any) => {
-            if (!oldData) return oldData;
-            return {
-              ...oldData,
-              files: oldData.files.map((f: ProjectFile) =>
-                f.id === file.id ? { ...f, visible_to_customer: newValue } : f
-              ),
-            };
-          });
-          return { previousFiles };
-        },
-        onSuccess: (data) => {
-          toast.success('Visibilitas file berhasil diperbarui.');
-          queryClient.invalidateQueries({ queryKey: ['projectFiles', file.project_id] });
-        },
-        onError: (err: any, newValue, context) => {
-          toast.error('Gagal memperbarui visibilitas file.', { description: err.message });
-          queryClient.setQueryData(['projectFiles', file.project_id], context?.previousFiles);
-        },
-      });
-
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Switch
-                checked={file.visible_to_customer}
-                onCheckedChange={(newValue) => toggleVisibilityMutation.mutate(newValue)}
-                disabled={toggleVisibilityMutation.isPending}
-                aria-label={file.visible_to_customer ? 'Terlihat oleh klien' : 'Tidak terlihat oleh klien'}
-                color='primary'
-                className={`mx-auto flex ${file.visible_to_customer ? 'bg-primary' : 'bg-background'}`}
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              {file.visible_to_customer ? 'Terlihat oleh klien' : 'Tidak terlihat oleh klien'}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    },
+    cell: ({ row }) => <VisibilityCell file={row.original} />,
     enableSorting: false,
   },
   {

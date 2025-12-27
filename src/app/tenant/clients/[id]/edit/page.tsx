@@ -22,6 +22,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Trash2, Save, ArrowLeft, Plus, Eye, Upload, FileText, Info } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DatePicker } from '@/components/ui/date-picker';
+import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +39,14 @@ const formatFileSizeLabel = (bytes?: number | null) => {
   if (!bytes || !Number.isFinite(bytes)) return '';
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
+const parseDateString = (value: unknown) => {
+  if (typeof value !== 'string' || !value) return undefined;
+  const parts = value.split('-');
+  if (parts.length !== 3) return undefined;
+  const [y, m, d] = parts.map(Number);
+  return new Date(y, m - 1, d);
 };
 
 // Zod Schema (Simplified version of CreateClientModalUpdated)
@@ -1521,7 +1531,7 @@ export default function EditClientPage() {
                     </p>
                     {watch('use_default_coa') && (
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="px-3 py-1 bg-card dark:bg-slate-800 border rounded-md text-sm">
+                        <span className="px-3 py-1 bg-white dark:bg-slate-800 border rounded-md text-sm">
                           Trading COA Template
                         </span>
                         <Button type="button" variant="ghost" size="sm" className="text-muted-foreground">
@@ -1747,7 +1757,7 @@ export default function EditClientPage() {
                       </div>
                       
                       {doc.file_url ? (
-                        <div className="mt-3 p-3 bg-card dark:bg-slate-800 rounded-lg border">
+                        <div className="mt-3 p-3 bg-white dark:bg-slate-800 rounded-lg border">
                           <p className="font-medium text-blue-900 dark:text-blue-100">{doc.file_name || 'Dokumen'}</p>
                           <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                             {doc.expiry_date && (
@@ -1822,7 +1832,7 @@ export default function EditClientPage() {
             )}
           </div>
 
-          <div className="w-full h-[70vh] rounded-md border overflow-hidden bg-card">
+          <div className="w-full h-[70vh] rounded-md border overflow-hidden bg-white">
             {previewUrl ? (
               <iframe
                 src={previewUrl}

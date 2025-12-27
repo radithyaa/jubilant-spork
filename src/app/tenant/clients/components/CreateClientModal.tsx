@@ -40,6 +40,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
+import { useCoaTemplates } from '@/hooks/useCoaTemplates';
 
 // Form validation schemas
 const basicInfoSchema = z.object({
@@ -257,6 +258,9 @@ export function CreateClientModal({ open, onClose, onSuccess }: CreateClientModa
   const [branches, setBranches] = useState<Branch[]>([]);
   const [manualCoa, setManualCoa] = useState<ManualCoaItem[]>([]);
   const [expandedSections, setExpandedSections] = useState<string[]>(['basicInfo', 'contacts']);
+
+  // Fetch CoA Templates
+  const { data: coaTemplates, isLoading: isLoadingCoaTemplates } = useCoaTemplates();
 
   // Form instances for each step
   const basicInfoForm = useForm<z.infer<typeof basicInfoSchema>>({
@@ -1658,10 +1662,17 @@ export function CreateClientModal({ open, onClose, onSuccess }: CreateClientModa
                           <SelectValue placeholder="Pilih template COA" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="trading">Trading COA Template</SelectItem>
-                          <SelectItem value="manufacturing">Manufacturing COA Template</SelectItem>
-                          <SelectItem value="service">Service COA Template</SelectItem>
-                          <SelectItem value="construction">Construction COA Template</SelectItem>
+                          {isLoadingCoaTemplates ? (
+                            <div className="p-2 text-center text-sm text-muted-foreground">Loading...</div>
+                          ) : coaTemplates && coaTemplates.length > 0 ? (
+                            coaTemplates.map((template) => (
+                              <SelectItem key={template} value={template}>
+                                {template}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="p-2 text-center text-sm text-muted-foreground">Tidak ada template</div>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>

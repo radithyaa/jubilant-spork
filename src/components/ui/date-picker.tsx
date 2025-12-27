@@ -12,6 +12,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { Matcher } from "react-day-picker";
 
 interface DatePickerProps {
 	value: Date | undefined;
@@ -19,6 +20,7 @@ interface DatePickerProps {
 	placeholder?: string;
 	disabled?: boolean;
 	className?: string;
+	disabledDays?: Matcher | Matcher[];
 }
 
 export function DatePicker({
@@ -27,6 +29,7 @@ export function DatePicker({
 	placeholder = "Pick a date",
 	disabled = false,
 	className,
+	disabledDays,
 }: DatePickerProps) {
 	const [date, setDate] = useState<Date | undefined>(value);
 	const [open, setOpen] = useState(false);

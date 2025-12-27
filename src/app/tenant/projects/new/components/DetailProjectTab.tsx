@@ -16,11 +16,11 @@ import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useFormContext, Controller } from "react-hook-form";
 import type { ProjectFormValues } from "@/validators/project.schema";
-import { useEffect, useState, useMemo } from "react";
-import api from "@/lib/api";
+import { useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClients } from "@/hooks/useClients";
 import { useTenantUsers } from "@/hooks/useTenant";
+import { User } from "@/types/users";
 
 // Modules definition
 export const MODULES = [
@@ -32,6 +32,19 @@ export const MODULES = [
 	{ code: "KK_5", label: "QC & Handaover" },
 ];
 
+// Helper to get color style based on module code
+const getModuleStyle = (code: string) => {
+	if (["FORM_1", "KK_2", "KK_4"].includes(code)) {
+		return { bg: "bg-background", textColor: "text-primary" };
+	}
+	return { bg: "bg-[rgba(255,204,0,0.1)]", textColor: "" };
+};
+
+// Helper to sanitize scope key for form field names
+const sanitizeScopeKey = (scope: string) => {
+	return scope.replace(/[\s.]/g, "_");
+};
+
 export default function DetailProjectTab() {
 	const {
 		register,
@@ -39,6 +52,9 @@ export default function DetailProjectTab() {
 		formState: { errors },
 		watch,
 	} = useFormContext<ProjectFormValues>();
+
+	const startDate = watch("start_date");
+	const selectedScopes = watch("scopes") || [];
 
 	const { tenant } = useAuth();
 
@@ -61,6 +77,34 @@ export default function DetailProjectTab() {
 		() => (pmsData?.items || []).filter((u: any) => u?.role !== "Admin Tenant"),
 		[pmsData],
 	);
+
+	// Fetch tenant-scoped users once, reuse for all module leader/member dropdowns
+	const { data: tenantUsersData } = useTenantUsers({
+		tenantId: tenant?.id || "",
+		enabled: !!tenant?.id,
+		limit: 100,
+	});
+
+	const tenantUsers = useMemo(
+		() =>
+			(tenantUsersData?.items || []).filter(
+				(u: any) => u?.role !== "Admin Tenant",
+			),
+		[tenantUsersData],
+	);
+
+	const moduleUsers = useMemo(() => {
+		return selectedScopes.reduce(
+			(acc, scope) => {
+				acc[scope] = {
+					leaders: tenantUsers,
+					members: tenantUsers,
+				};
+				return acc;
+			},
+			{} as Record<string, { leaders: any[]; members: any[] }>,
+		);
+	}, [selectedScopes, tenantUsers]);
 
 	return (
 		<div className="flex items-start gap-[30px] self-stretch">
@@ -275,6 +319,147 @@ export default function DetailProjectTab() {
 						</div>
 					</div>
 				</Card>
+
+				{/* Team Assignment (Dynamic) */}
+				{selectedScopes.length > 0 && (
+					<Card className="p-5">
+						<div className="mb-5 flex flex-col gap-0">
+							<CardTitle>Team Assignment</CardTitle>
+							<CardDescription className="line-clamp-1 overflow-hidden text-ellipsis text-primary">
+								Atur Team Leader / Member untuk setiap modul
+							</CardDescription>
+						</div>
+
+						<div className="flex flex-col gap-2.5">
+							{selectedScopes.map((scope) => {
+								const style = getModuleStyle(scope);
+								const leaderField = watch(
+									`team_assignments.${sanitizeScopeKey(scope)}.leader_id`,
+								);
+								const memberField = watch(
+									`team_assignments.${sanitizeScopeKey(scope)}.member_id`,
+								);
+
+								const filteredLeaders =
+									moduleUsers[scope]?.leaders.filter(
+										(u: any) => u.id !== memberField,
+									) || [];
+
+								const filteredMembers =
+									moduleUsers[scope]?.members.filter(
+										(u: User) => u.id !== leaderField,
+									) || [];
+
+								return (
+									<div
+										key={scope}
+										className="flex flex-col gap-2.5 border-b pb-4 last:border-0 last:pb-0 pt-2 first:pt-0"
+									>
+										<div
+											className={`inline-flex items-center justify-center gap-2.5 self-start rounded-[5px] border px-2.5 py-1 ${style.bg}`}
+										>
+											<span
+												className={`font-inter text-xs leading-normal ${style.textColor}`}
+											>
+												{scope
+													.replace(/_/g, " ")
+													.replace(" 1 0", " 1.0")
+													.replace(" 2 0", " 2.0")
+													.replace(" 3 0", " 3.0")
+													.replace(" 4 0", " 4.0")
+													.replace(" 5 0", " 5.0")}
+											</span>
+										</div>
+
+										<div className="flex flex-col gap-2">
+											<div className="flex flex-col gap-1">
+												<Label className="text-xs">Team Leader</Label>
+												<Controller
+													control={control}
+													name={`team_assignments.${sanitizeScopeKey(scope)}.leader_id`}
+													render={({ field }) => (
+														<Select
+															onValueChange={field.onChange}
+															value={field.value}
+														>
+															<SelectTrigger
+																className={
+																	errors.team_assignments?.[sanitizeScopeKey(scope)]
+																		?.leader_id
+																		? "border-red-500 h-9"
+																		: "h-9"
+																}
+															>
+																<SelectValue placeholder="Pilih Team Leader" />
+															</SelectTrigger>
+															<SelectContent>
+																{filteredLeaders.map((u: any) => (
+																	<SelectItem key={u.id} value={u.id}>
+																		{u.username}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+													)}
+												/>
+												{errors.team_assignments?.[sanitizeScopeKey(scope)]
+													?.leader_id && (
+													<span className="text-red-500 text-xs">
+														{
+															errors.team_assignments[sanitizeScopeKey(scope)]
+																?.leader_id?.message
+														}
+													</span>
+												)}
+											</div>
+
+											<div className="flex flex-col gap-1">
+												<Label className="text-xs">Team Member</Label>
+												<Controller
+													control={control}
+													name={`team_assignments.${sanitizeScopeKey(scope)}.member_id`}
+													render={({ field }) => (
+														<Select
+															onValueChange={field.onChange}
+															value={field.value}
+														>
+															<SelectTrigger
+																className={
+																	errors.team_assignments?.[sanitizeScopeKey(scope)]
+																		?.member_id
+																		? "border-red-500 h-9"
+																		: "h-9"
+																}
+															>
+																<SelectValue placeholder="Pilih Team Member" />
+															</SelectTrigger>
+															<SelectContent>
+																{filteredMembers.map((u: any) => (
+																	<SelectItem key={u.id} value={u.id}>
+																		{u.username}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+													)}
+												/>
+												{errors.team_assignments?.[sanitizeScopeKey(scope)]
+													?.member_id && (
+													<span className="text-red-500 text-xs">
+														{
+															errors.team_assignments[sanitizeScopeKey(scope)]
+																?.member_id?.message
+														}
+													</span>
+												)}
+											</div>
+										</div>
+									</div>
+								);
+							})}
+						</div>
+					</Card>
+				)}
 			</div>
 
 			{/* Right Column - Scope of Work */}

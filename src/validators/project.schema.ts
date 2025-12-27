@@ -42,6 +42,17 @@ export const projectSchema = z.object({
 	bast_template_id: z.string().optional(),
 	invoice_template_id: z.string().optional(),
 }).superRefine((data, ctx) => {
+    // Validate dates
+    if (data.start_date && data.end_date) {
+        if (data.end_date < data.start_date) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Deadline tidak boleh lebih awal dari Tanggal Mulai",
+                path: ["end_date"],
+            });
+        }
+    }
+
     const { scopes, team_assignments } = data;
     if (!scopes || scopes.length === 0) return;
 

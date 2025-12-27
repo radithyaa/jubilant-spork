@@ -60,7 +60,7 @@ export const useTenantUsers = (params: UseTenantUsersParams) => {
 					page: number;
 					size: number;
 				};
-			}>(`/tenant/${tenantId}/users`, {
+			}>(`/api/v1/tenants/${tenantId}/users`, {
 				params: {
 					search,
 					status,
@@ -93,7 +93,7 @@ export const useInviteUser = (tenantId: string) => {
 
 	return useMutation({
 		mutationFn: async (payload: { email: string; role_id: string }) => {
-			const { data } = await api.post(`/tenant/${tenantId}/users`, payload);
+			const { data } = await api.post(`/api/v1/tenants/${tenantId}/users`, payload);
 			return data;
 		},
 		onSuccess: () => {
@@ -114,7 +114,7 @@ export const useUpdateUserRole = (tenantId: string) => {
 			roleId: string;
 		}) => {
 			const { data } = await api.put(
-				`/tenant/${tenantId}/users/${userId}/role`,
+				`/api/v1/tenants/${tenantId}/users/${userId}/role`,
 				{
 					role_id: roleId,
 				},
@@ -138,7 +138,7 @@ export const useDeactivateUser = (tenantId: string) => {
 			userId: string;
 			reason?: string;
 		}) => {
-			const { data } = await api.delete(`/tenant/${tenantId}/users/${userId}`, {
+			const { data } = await api.delete(`/api/v1/tenants/${tenantId}/users/${userId}`, {
 				data: { reason },
 			});
 			return data;
@@ -155,7 +155,7 @@ export const useReactivateUser = (tenantId: string) => {
 	return useMutation({
 		mutationFn: async (userId: string) => {
 			const { data } = await api.post(
-				`/tenant/${tenantId}/users/${userId}/reactivate`,
+				`/api/v1/tenants/${tenantId}/users/${userId}/reactivate`,
 			);
 			return data;
 		},
@@ -173,7 +173,7 @@ export const useImportUsers = (tenantId: string) => {
 			const formData = new FormData();
 			formData.append("file", file);
 			const { data } = await api.post(
-				`/tenant/${tenantId}/users/import`,
+				`/api/v1/tenants/${tenantId}/users/import`,
 				formData,
 				{
 					headers: {

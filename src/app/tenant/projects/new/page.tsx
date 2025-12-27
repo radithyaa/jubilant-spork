@@ -1,13 +1,13 @@
 "use client";
 
 import RBAC from "@/components/rbac/RBAC";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import DetailProjectTab from "./components/DetailProjectTab";
 import ProjectSettingsTab from "./components/ProjectSettingsTab";
-import Switch from "@/components/switch";
+
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -21,7 +21,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 
 function NewProjectPageContent() {
-	const [published, setPublished] = useState(false);
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const searchParams = useSearchParams();
@@ -128,15 +127,7 @@ function NewProjectPageContent() {
 							Tambah Project Baru
 						</h1>
 					</div>
-					<div className="flex items-center gap-4">
-						<span className="font-inter text-sm font-medium leading-[14px] ">
-							Publish
-						</span>
-						<Switch
-							checked={published}
-							onChange={(e: any) => setPublished(e.target.checked)}
-						/>
-					</div>
+
 					<Button
 						type="submit"
 						className="flex"
